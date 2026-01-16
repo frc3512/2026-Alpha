@@ -7,6 +7,13 @@
 
 package frc.robot.commands;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -23,12 +30,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
@@ -127,6 +130,133 @@ public class DriveCommands {
               double omega =
                   angleController.calculate(
                       drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
+
+              // Convert to field relative speeds & send command
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                      linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                      omega);
+              boolean isFlipped =
+                  DriverStation.getAlliance().isPresent()
+                      && DriverStation.getAlliance().get() == Alliance.Red;
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      speeds,
+                      isFlipped
+                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                          : drive.getRotation()));
+            },
+            drive)
+
+        // Reset PID controller when command starts
+        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
+
+  /**
+   * Command to point the robot at a specific AprilTag using PID control. The robot will turn in
+   * place to face the tag while keeping linear velocities at zero.
+   */
+  public static Command pointAtAprilTag(
+      Drive drive, Vision vision, int tagId, List<Integer> cameraIndex) {
+    // Create PID controller
+    ProfiledPIDController angleController =
+        new ProfiledPIDController(
+            ANGLE_KP,
+            0.0,
+            ANGLE_KD,
+            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    // Construct command
+    return Commands.run(
+            () -> {
+              // Get robot pose
+              Pose2d robotPose = drive.getPose();
+
+              // Get tag pose
+              var tagPoseOptional = VisionConstants.aprilTagLayout.getTagPose(tagId);
+              if (tagPoseOptional.isEmpty()) {
+                // Tag not found, do nothing
+                drive.runVelocity(new ChassisSpeeds(0.0, 0.0, 0.0));
+                return;
+              }
+              Pose2d tagPose = tagPoseOptional.get().toPose2d();
+
+              // Calculate angle to tag
+              double angleToTag =
+                  Math.atan2(tagPose.getY() - robotPose.getY(), tagPose.getX() - robotPose.getX());
+
+              // Target rotation is current rotation plus angle to tag
+              Rotation2d targetRotation = robotPose.getRotation().plus(new Rotation2d(angleToTag));
+
+              // Calculate angular speed
+              double omega =
+                  angleController.calculate(
+                      drive.getRotation().getRadians(), targetRotation.getRadians());
+
+              // Convert to field relative speeds & send command (linear velocities are zero)
+              ChassisSpeeds speeds = new ChassisSpeeds(0.0, 0.0, omega);
+              boolean isFlipped =
+                  DriverStation.getAlliance().isPresent()
+                      && DriverStation.getAlliance().get() == Alliance.Red;
+              drive.runVelocity(
+                  ChassisSpeeds.fromFieldRelativeSpeeds(
+                      speeds,
+                      isFlipped
+                          ? drive.getRotation().plus(new Rotation2d(Math.PI))
+                          : drive.getRotation()));
+            },
+            drive)
+
+        // Reset PID controller when command starts
+        .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
+
+  /**
+   * Field relative drive command using joystick for linear control and PID for angular control to
+   * keep the robot pointed at the Hub (center of the field).
+   */
+  public static Command joystickDriveAtHub(
+      Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+
+    // Create PID controller
+    ProfiledPIDController angleController =
+        new ProfiledPIDController(
+            ANGLE_KP,
+            0.0,
+            ANGLE_KD,
+            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+    // Hub position (center of the field)
+    Translation2d hubPosition =
+        new Translation2d(
+            VisionConstants.aprilTagLayout.getFieldLength() / 2.0,
+            VisionConstants.aprilTagLayout.getFieldWidth() / 2.0);
+
+    // Construct command
+    return Commands.run(
+            () -> {
+              // Get linear velocity
+              Translation2d linearVelocity =
+                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+
+              // Get robot pose
+              Pose2d robotPose = drive.getPose();
+
+              // Calculate angle to hub
+              double angleToHub =
+                  Math.atan2(
+                      hubPosition.getY() - robotPose.getY(), hubPosition.getX() - robotPose.getX());
+
+              // Target rotation is the absolute angle to the hub
+              Rotation2d targetRotation = new Rotation2d(angleToHub);
+
+              // Calculate angular speed
+              double omega =
+                  angleController.calculate(
+                      drive.getRotation().getRadians(), targetRotation.getRadians());
 
               // Convert to field relative speeds & send command
               ChassisSpeeds speeds =
