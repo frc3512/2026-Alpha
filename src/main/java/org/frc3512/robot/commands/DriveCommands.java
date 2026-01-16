@@ -5,14 +5,7 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.commands;
-
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+package org.frc3512.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -29,9 +22,15 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionConstants;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+import org.frc3512.robot.subsystems.drive.Drive;
+import org.frc3512.robot.subsystems.vision.Vision;
+import org.frc3512.robot.subsystems.vision.VisionConstants;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
@@ -157,7 +156,7 @@ public class DriveCommands {
    * Command to point the robot at a specific AprilTag using PID control. The robot will turn in
    * place to face the tag while keeping linear velocities at zero.
    */
-  public static Command pointAtAprilTag(
+  public static Command pointAtTag(
       Drive drive, Vision vision, int tagId, List<Integer> cameraIndex) {
     // Create PID controller
     ProfiledPIDController angleController =
@@ -217,8 +216,7 @@ public class DriveCommands {
    * Field relative drive command using joystick for linear control and PID for angular control to
    * keep the robot pointed at the Hub (center of the field).
    */
-  public static Command joystickDriveAtHub(
-      Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+  public static Command aimAtHub(Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
 
     // Create PID controller
     ProfiledPIDController angleController =

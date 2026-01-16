@@ -1,28 +1,27 @@
-package frc.robot;
-
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+package org.frc3512.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.DriveCommands;
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import java.util.List;
+import org.frc3512.robot.commands.DriveCommands;
+import org.frc3512.robot.subsystems.drive.Drive;
+import org.frc3512.robot.subsystems.drive.GyroIO;
+import org.frc3512.robot.subsystems.drive.GyroIOPigeon2;
+import org.frc3512.robot.subsystems.drive.ModuleIO;
+import org.frc3512.robot.subsystems.drive.ModuleIOSim;
+import org.frc3512.robot.subsystems.drive.ModuleIOTalonFX;
+import org.frc3512.robot.subsystems.drive.TunerConstants;
+import org.frc3512.robot.subsystems.vision.Vision;
+import org.frc3512.robot.subsystems.vision.VisionConstants;
+import org.frc3512.robot.subsystems.vision.VisionIO;
+import org.frc3512.robot.subsystems.vision.VisionIOPhotonVision;
+import org.frc3512.robot.subsystems.vision.VisionIOPhotonVisionSim;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
   // Subsystems
@@ -51,8 +50,10 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVision(VisionConstants.frontLeftCamera, VisionConstants.robotToLeft),
-                new VisionIOPhotonVision(VisionConstants.frontRightCamera, VisionConstants.robotToRight),
+                new VisionIOPhotonVision(
+                    VisionConstants.frontLeftCamera, VisionConstants.robotToLeft),
+                new VisionIOPhotonVision(
+                    VisionConstants.frontRightCamera, VisionConstants.robotToRight),
                 new VisionIOPhotonVision(VisionConstants.aimCamera, VisionConstants.robotToAim));
 
         break;
@@ -70,9 +71,12 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(VisionConstants.frontLeftCamera, VisionConstants.robotToLeft, drive::getPose),
-                new VisionIOPhotonVisionSim(VisionConstants.frontRightCamera, VisionConstants.robotToRight, drive::getPose),
-                new VisionIOPhotonVisionSim(VisionConstants.aimCamera, VisionConstants.robotToAim, drive::getPose));
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.frontLeftCamera, VisionConstants.robotToLeft, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.frontRightCamera, VisionConstants.robotToRight, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.aimCamera, VisionConstants.robotToAim, drive::getPose));
 
         break;
 
@@ -132,12 +136,12 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> Rotation2d.kZero));
 
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+    // Switch to X pattern when left stick is pressed
+    controller.leftStick().onTrue(Commands.runOnce(drive::stopWithX, drive));
 
-    // Reset gyro to 0° when B button is pressed
+    // Reset gyro to 0° when right stick is pressed
     controller
-        .b()
+        .rightStick()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -145,6 +149,15 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+
+    controller.rightTrigger().whileTrue(DriveCommands.pointAtTag(drive, vision, 1, List.of(0, 1)));
+
+    // controller
+    //     .rightTrigger()
+    //     .whileTrue(DriveCommands.aimAtHub(
+    //         drive,
+    //         () -> -controller.getLeftY(),
+    //         () -> -controller.getLeftX()));
   }
 
   public Command getAutonomousCommand() {
