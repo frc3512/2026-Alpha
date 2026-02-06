@@ -156,8 +156,7 @@ public class DriveCommands {
    * Command to point the robot at a specific AprilTag using PID control. The robot will turn in
    * place to face the tag while keeping linear velocities at zero.
    */
-  public static Command pointAtTag(
-      Drive drive, Vision vision, int tagId, List<Integer> cameraIndex) {
+  public static Command pointAtTag(Drive drive, Vision vision, int tagId) {
     // Create PID controller
     ProfiledPIDController angleController =
         new ProfiledPIDController(

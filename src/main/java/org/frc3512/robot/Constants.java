@@ -1,31 +1,41 @@
-// Copyright (c) 2021-2026 Littleton Robotics
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by a BSD
-// license that can be found in the LICENSE file
-// at the root directory of this project.
-
 package org.frc3512.robot;
 
+import static edu.wpi.first.units.Units.Inches;
+
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
+import java.util.Optional;
 
-/**
- * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
- * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
- * (log replay from a file).
- */
 public final class Constants {
-  public static final Mode simMode = Mode.SIM;
-  public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-  public static enum Mode {
-    /** Running on a real robot. */
-    REAL,
+  public final class GeneralConstants {
+    public static final Mode simMode = Mode.SIM;
+    public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
-    /** Running a physics simulator. */
-    SIM,
+    public static enum Mode {
+      /** Running on a real robot. */
+      REAL,
 
-    /** Replaying from a log file. */
-    REPLAY
+      /** Running a physics simulator. */
+      SIM,
+
+      /** Replaying from a log file. */
+      REPLAY
+    }
+  }
+
+  public static class FieldConstants {
+    public static Translation2d GOAL_LOCATION = hubPosition();
+
+    // Position constants from WCP CC
+    public static Translation2d hubPosition() {
+      final Optional<Alliance> alliance = DriverStation.getAlliance();
+      if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
+        return new Translation2d(Inches.of(182.105), Inches.of(158.845));
+      }
+      return new Translation2d(Inches.of(469.115), Inches.of(158.845));
+    }
   }
 }

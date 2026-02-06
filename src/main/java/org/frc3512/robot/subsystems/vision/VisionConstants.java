@@ -8,16 +8,14 @@ import edu.wpi.first.math.geometry.Transform3d;
 public class VisionConstants {
   // AprilTag layout
   public static AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+      AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
   // Camera names, must match names configured on coprocessor
   public static String frontLeftCamera = "Front_Left";
   public static String frontRightCamera = "Front_Right";
-  public static String aimCamera = "Aim_Camera";
 
   public static int frontLeftCameraIndex = 0;
   public static int frontRightCameraIndex = 1;
-  public static int aimCameraIndex = 2;
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
@@ -25,8 +23,6 @@ public class VisionConstants {
       new Transform3d(0.0, 0.0, 0.0, new Rotation3d(0.0, 0.0, 0.0));
   public static Transform3d robotToRight =
       new Transform3d(-0.0, 0.0, 0.0, new Rotation3d(0.0, 0.0, 0.0));
-  public static Transform3d robotToAim =
-      new Transform3d(0.0, 0.0, 0.0, new Rotation3d(0.0, 0.0, 0.0));
 
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.3;
