@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Example Path"
+            "pathName": "toOutpostPath"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "rotateOutpostPath"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "OutpostInvolved",
   "choreoAuto": false
 }
