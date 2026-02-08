@@ -1,7 +1,7 @@
-# 2026-Alpha — Competition Code
+# 2026-Alpha - Prototyping Robot code
 
 Purpose
-- This repository is dedicated to the official code of the competition robot for the 2026 season.
+- This repository is dedicated to wooden proto-bot that will be used to test possible designs for the competition robot
 
 Branching & workflow
 - main: current main version with the latest and functional code
@@ -18,4 +18,4 @@ Version Management (V.U.R)
 
 This repo is for experimentation and verification: keep it organized, documented, and fast to run so prototypes can be iterated efficiently.
 
-Current Version: 2.0.0
+Current Version: 2.0.1
