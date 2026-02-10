@@ -126,7 +126,8 @@ public class RobotContainer {
         break;
     }
 
-    NamedCommands.registerCommand("Shoot", quickShoot());
+    NamedCommands.registerCommand("Far Shoot", farShoot());
+    NamedCommands.registerCommand("Close Shoot", closeShoot());
     NamedCommands.registerCommand("Intake", intake.setRollerSpeed(0.5));
     NamedCommands.registerCommand("Stop Intake", reset());
 
@@ -215,9 +216,22 @@ public class RobotContainer {
 
   // Auto Methods
 
-  public Command quickShoot() {
+  public Command farShoot() {
     return Commands.sequence(
-        flywheel.setOutput(0.6), Commands.waitSeconds(4), feed(), Commands.waitSeconds(3), reset());
+        flywheel.setOutput(0.65),
+        Commands.waitSeconds(3),
+        feed(),
+        Commands.waitSeconds(6),
+        reset());
+  }
+
+  public Command closeShoot() {
+    return Commands.sequence(
+        flywheel.setOutput(0.55),
+        Commands.waitSeconds(3),
+        feed(),
+        Commands.waitSeconds(6),
+        reset());
   }
 
   public Command intakeDepot() {

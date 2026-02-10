@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "rotateOutpostPath"
@@ -20,6 +26,12 @@
           "type": "path",
           "data": {
             "pathName": "OutScCLPath"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Close Shoot"
           }
         }
       ]
