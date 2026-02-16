@@ -13,8 +13,28 @@ public class Flywheel extends SubsystemBase {
     this.io = io;
   }
 
+  /**
+   * Set the flywheel RPM directly. Use this method when calling from within a command's execute()
+   * method.
+   */
+  public void setRPMDirect(double rpm) {
+    io.setRPM(rpm);
+  }
+
+  public Command setRPM(double rpm) {
+    return runOnce(() -> io.setRPM(rpm));
+  }
+
   public Command setOutput(double output) {
     return runOnce(() -> io.setOutput(output));
+  }
+
+  public Command stop() {
+    return runOnce(() -> io.stop());
+  }
+
+  public boolean isVelocityWithinTolerance() {
+    return io.isVelocityWithinTolerance();
   }
 
   @Override

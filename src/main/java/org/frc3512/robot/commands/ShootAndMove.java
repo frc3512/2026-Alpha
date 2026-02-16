@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -14,22 +15,29 @@ import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.DoubleSupplier;
 import org.frc3512.robot.Constants;
 import org.frc3512.robot.subsystems.drive.Drive;
+import org.frc3512.robot.subsystems.flywheels.Flywheel;
 
 public class ShootAndMove extends Command {
   private static final double DEADBAND = 0.1;
-  private static final double ANGLE_KP = 5.0;
-  private static final double ANGLE_KD = 0.4;
-  private static final double ANGLE_MAX_VELOCITY = 8.0;
+  private static final double ANGLE_KP = 12;
+  private static final double ANGLE_KD = 0;
+  private static final double ANGLE_MAX_VELOCITY = 10.0;
   private static final double ANGLE_MAX_ACCELERATION = 20.0;
+  private static final double DEFAULT_RPM = 3000.0;
 
   private final Drive drive;
+  private final Flywheel flywheel;
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
 
   private final ProfiledPIDController angleController;
 
-  public ShootAndMove(Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+  private static final InterpolatingDoubleTreeMap RPM_TABLE = new InterpolatingDoubleTreeMap();
+
+  public ShootAndMove(
+      Drive drive, Flywheel flywheel, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
     this.drive = drive;
+    this.flywheel = flywheel;
     this.xSupplier = xSupplier;
     this.ySupplier = ySupplier;
 
@@ -41,7 +49,11 @@ public class ShootAndMove extends Command {
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     angleController.enableContinuousInput(-Math.PI, Math.PI);
 
-    addRequirements(drive);
+    RPM_TABLE.put(2.0, 2600.0);
+    RPM_TABLE.put(4.0, 3750.0);
+    RPM_TABLE.put(5.0, 4100.0);
+
+    addRequirements(drive, flywheel);
   }
 
   @Override
@@ -92,11 +104,17 @@ public class ShootAndMove extends Command {
         ChassisSpeeds.fromFieldRelativeSpeeds(
             speeds,
             isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+
+    // 3. SET FLYWHEEL RPM BASED ON DISTANCE
+    double distanceToHub = targetVec.getNorm();
+    Double rpm = RPM_TABLE.get(distanceToHub);
+    flywheel.setRPMDirect(rpm);
   }
 
   @Override
   public void end(boolean interrupted) {
     drive.stop();
+    flywheel.stop();
   }
 
   private Translation2d getLinearVelocityFromJoysticks() {

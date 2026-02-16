@@ -4,6 +4,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 
 public class VisionConstants {
   // AprilTag layout
@@ -11,18 +12,32 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
   // Camera names, must match names configured on coprocessor
-  public static String frontLeftCamera = "Front_Left";
-  public static String frontRightCamera = "Front_Right";
-
-  public static int frontLeftCameraIndex = 0;
-  public static int frontRightCameraIndex = 1;
+  public static String frontLeftCamera = "Left Shooter";
+  public static String frontRightCamera = "Right Shooter";
+  public static String rearCamera = "Rear Cam";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
   public static Transform3d robotToLeft =
-      new Transform3d(0.0, 0.0, 0.0, new Rotation3d(0.0, 0.0, 0.0));
+      new Transform3d(
+          Units.inchesToMeters(-12.5), // Left to Right
+          Units.inchesToMeters(-0.5), // Front to Back
+          Units.inchesToMeters(25.5), // Bottom to Top
+          new Rotation3d(0.0, Units.degreesToRadians(35), 0.0));
+
   public static Transform3d robotToRight =
-      new Transform3d(-0.0, 0.0, 0.0, new Rotation3d(0.0, 0.0, 0.0));
+      new Transform3d(
+          Units.inchesToMeters(12.5),
+          Units.inchesToMeters(-0.5),
+          Units.inchesToMeters(25.5),
+          new Rotation3d(0.0, Units.degreesToRadians(35), 0.0));
+
+  public static Transform3d robotToRear =
+      new Transform3d(
+          Units.inchesToMeters(0.0),
+          Units.inchesToMeters(-10.0),
+          Units.inchesToMeters(21.5),
+          new Rotation3d(0.0, Units.degreesToRadians(5.0), Units.degreesToRadians(108)));
 
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.3;
