@@ -14,9 +14,20 @@ public interface FlywheelIO {
     public double rightAppliedVolts = 0.0;
 
     public double rpmSetpoint = 0.0;
+    public boolean isVelocityWithinTolerance;
   }
 
   public default void updateInputs(FlywheelIOInputs inputs) {}
+
+  public default void setRPM(double rpm) {}
+
+  public default void setPercentOutput(double percent) {}
+
+  public default void stop() {}
+
+  public default boolean isVelocityWithinTolerance() {
+    return false;
+  }
 
   public default void setOutput(double output) {}
 }
